@@ -16,8 +16,6 @@ A Python chatbot that represents your professional background, skills, and exper
 - A Pushover user key and application token for notifications.
 - A LinkedIn profile PDF with extractable text and a UTF-8 personal summary.
 
-Dependencies are listed without version pins in `requirements.txt`: `openai`, `gradio`, `pypdf`, `python-dotenv`, and `requests`.
-
 ## Setup
 
 Run the following commands from the project directory.
@@ -54,7 +52,7 @@ The app loads `.env` with `override=True`, so these values take precedence over 
 
 ### 3. Add your profile
 
-- Place your LinkedIn profile PDF at `linkedin.pdf` in the project root. This file is ignored by Git and must be supplied separately after cloning.
+- Place your LinkedIn profile PDF at `linkedin.pdf` in the project root. Committing it is optional. To keep it out of your repository, add `linkedin.pdf` to `.gitignore` before staging files and supply it separately after cloning. If you commit it to a public repository, its contents will be public.
 - Edit `summary.txt` with the background, experience, skills, and professional details you want the twin to use. This file is tracked by Git.
 
 Both files are required at startup. PDF pages without extractable text are skipped; the app does not perform OCR. Restart the app after changing either file because the context is loaded at import time.
@@ -74,6 +72,48 @@ macOS / Linux:
 ```
 
 Open the local URL printed by Gradio in your browser. Keep the terminal running while using the app, and press `Ctrl+C` to stop it. Launch from the project root so the relative profile paths resolve correctly.
+
+## Deploy to Render
+
+### 1. Push the project to GitHub
+
+Commit and push the application files, `requirements.txt`, and your updated `summary.txt` to a GitHub repository. These deployment steps assume `linkedin.pdf` is also committed at the project root. Keep `.env` excluded by `.gitignore` and configure credentials in Render.
+
+### 2. Create a web service
+
+In the Render dashboard, select **New > Web Service**, connect GitHub, and select your repository. Configure these settings:
+
+| Setting | Value |
+| --- | --- |
+| Name | digital-twin |
+| Language | Python 3 |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | python app.py |
+
+Choose a region near you, then under **Compute**, select **Free ($0/month)**.
+
+The start command assigns Render's `PORT` to Gradio. Together with `GRADIO_SERVER_NAME=0.0.0.0` in the next step, it configures the app to receive public requests.
+
+### 3. Set environment variables
+
+Add these in the **Environment Variables** section during creation, or on the service's **Environment** page:
+
+| Key | Value |
+| --- | --- |
+| `OPENAI_API_KEY` | Your OpenAI API key |
+| `PUSHOVER_USER` | Your Pushover user key |
+| `PUSHOVER_TOKEN` | Your Pushover application token |
+| `GRADIO_SERVER_NAME` | `0.0.0.0` |
+| `GRADIO_SERVER_PORT` | `10000` |
+
+
+Once the settings are ready, click **Deploy web service**. Watch the deployment logs until the service is live.
+
+### 4. Verify and link your portfolio
+
+Open the service's `https://<your-service-name>.onrender.com` URL and ask a career question. Test a contact request with your own email and confirm the notification arrives in Pushover. Use the actual Render URL for your portfolio's **Live Demo** or **Talk to my AI Twin** link.
+
+Free Render web services sleep after 15 minutes without inbound traffic and can take about a minute to wake up.
 
 ## Usage
 
@@ -101,25 +141,6 @@ The profile context and conversation messages are sent to OpenAI. Contact detail
 | `tools.py` | Tool schemas, dispatch, and Pushover notifications. |
 | `styles.py` | CSS, JavaScript, and starter prompts. |
 | `summary.txt` | Personal background included in the prompt. |
-| `linkedin.pdf` | Local LinkedIn profile source; ignored by Git. |
+| `linkedin.pdf` | Required LinkedIn profile source; committing it to Git is optional. |
 | `requirements.txt` | Python dependencies. |
 | `.env` | Local credentials; ignored by Git. |
-
-## Customization
-
-- Change `MODEL_NAME` in `app.py` to select a model available to your API account that supports the tool calls used here.
-- Edit `TWIN_SYSTEM_PROMPT` in `context.py` to change the twin's instructions.
-- Update `CSS`, `JS`, and `EXAMPLES` in `styles.py` to adjust appearance and starter prompts.
-- Update functions, schemas, and `tool_map` together in `tools.py` when changing tools.
-
-## Troubleshooting
-
-| Symptom | Check |
-| --- | --- |
-| Missing profile file at startup | Supply both `linkedin.pdf` and `summary.txt`, and run from the project root. |
-| Missing API key or authentication error | Set `OPENAI_API_KEY` in `.env` and restart the app. |
-| Model access error | Check access to the model specified by `MODEL_NAME` in `app.py`. |
-| Profile changes do not appear | Restart the app to reload the source files. |
-| PDF details are missing | Confirm the PDF contains selectable text; image-only pages need OCR before use. |
-| Notifications do not arrive | Check both Pushover credentials and connectivity. Tool success does not verify delivery. |
-| Interface changes after reinstalling packages | Dependencies are unpinned, and custom styling may need updates for a different Gradio version. |
