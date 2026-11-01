@@ -1,9 +1,11 @@
 """Styling constants for the digital twin Gradio app."""
 
+# CSS below repeats these accent values literally; update both when rebranding.
 GOLD = "#ecad0a"
 BLUE = "#209dd7"
 PURPLE = "#753991"
 
+# Starter prompts shown by Gradio beneath the chat.
 EXAMPLES = [
     "Tell me about your background and experience.",
     "What kinds of projects are you working on now?",
@@ -11,6 +13,8 @@ EXAMPLES = [
     "How can I get in touch with you?",
 ]
 
+# Overrides for Gradio's generated UI. Selector names may need revisiting after
+# a Gradio upgrade; existing section comments explain the visual adjustments.
 CSS = """
 :root {
   --twin-gold: #ecad0a;
@@ -352,6 +356,8 @@ button[variant="primary"] svg {
 }
 """
 
+# Runs in the browser on launch. Delays allow the UI to mount; observers restore
+# input focus after replies and attach watchers to textareas added by rerenders.
 JS = """
 () => {
   document.title = 'Digital Twin';

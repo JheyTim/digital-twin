@@ -1,16 +1,21 @@
 from pypdf import PdfReader
 
+# Paths are relative to the working directory: launch from the project folder.
+# This context is loaded once at import; restart the app after updating the files.
 reader = PdfReader("linkedin.pdf")
 
 linkedin = ""
 for page in reader.pages:
     text = page.extract_text()
+    # Some PDF pages have no extractable text, so skip them.
     if text:
         linkedin += text
 
+# Edit summary.txt for the personal background included alongside the PDF text.
 with open("summary.txt", "r", encoding="utf-8") as f:
     summary = f.read()
 
+# Insert both sources into the instructions sent with every chat turn.
 TWIN_SYSTEM_PROMPT = f"""
 
 # Your role
