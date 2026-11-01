@@ -1,0 +1,2 @@
+My name is Timothy Jhey Sarmiento. I'm a Software Engineer with 2+ years of experience building scalable, secure, and reliable backend applications.
+I specialize in Node.js, TypeScript, AWS, REST APIs, and serverless architecture, with hands-on experience in payment gateway integrations, event-driven systems, database optimization, and CI/CD workflows.
